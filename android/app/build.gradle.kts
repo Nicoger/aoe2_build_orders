@@ -7,7 +7,6 @@ plugins {
 android {
     namespace = "com.example.aoe2_build_orders"
     compileSdk = 34
-    ndkVersion = "27.0.12077973"
 
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
@@ -22,8 +21,8 @@ android {
         applicationId = "com.example.aoe2_build_orders"
         minSdk = 21
         targetSdk = 34
-        versionCode = flutter.versionCode
-        versionName = flutter.versionName
+        versionCode = 1
+        versionName = "1.0.0"
     }
 
     buildTypes {
