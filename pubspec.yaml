@@ -1,0 +1,22 @@
+name: aoe2_build_order
+description: "A robust Age of Empires II DE utility app for build orders and tactical guidance."
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: '>=3.0.0 <4.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+  hive_flutter: ^1.1.0
+  url_launcher: ^6.2.5
+  wakelock_plus: ^1.1.4
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^3.0.0
+
+flutter:
+  uses-material-design: true
