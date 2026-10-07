@@ -269,41 +269,77 @@ class _PlayScreenState extends State<PlayScreen>
         child: Column(
           children: [
             // PANEL DE TIEMPO PRINCIPAL
-            Container(
-              padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
-              color: Colors.black45,
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceAround,
-                children: [
-                  Column(
+          Container(
+            padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+            color: Colors.black45,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                // 1. IZQUIERDA: Contador de Aldeanos
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text('TIEMPO TOTAL',
-                          style: TextStyle(fontSize: 10, color: Colors.grey)),
+                      const Text(
+                        'ALDEANOS',
+                        style: TextStyle(fontSize: 10, color: Colors.grey),
+                      ),
+                      Text(
+                        '$_currentVillagers/$_totalBuildVillagers',
+                        style: const TextStyle(
+                          fontSize: 32,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.amberAccent,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+
+                // 2. CENTRO: Tiempo Total
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      const Text(
+                        'TIEMPO TOTAL',
+                        style: TextStyle(fontSize: 10, color: Colors.grey),
+                      ),
                       Text(
                         _formatGameTime(_elapsedTotalSecs),
                         style: const TextStyle(
-                            fontSize: 20,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.white70),
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white70,
+                        ),
                       ),
                     ],
                   ),
-                  Column(
+                ),
+
+                // 3. DERECHA: Restante Paso
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.end,
                     children: [
-                      const Text('RESTANTE PASO',
-                          style: TextStyle(fontSize: 10, color: Colors.grey)),
+                      const Text(
+                        'RESTANTE PASO',
+                        style: TextStyle(fontSize: 10, color: Colors.grey),
+                      ),
                       Text(
                         _formatGameTime(_stepRemainingSecs),
                         style: const TextStyle(
-                            fontSize: 42,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.amberAccent),
+                          fontSize: 32,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.amberAccent,
+                        ),
                       ),
                     ],
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
+          ),
 
             Expanded(
               child: SingleChildScrollView(
