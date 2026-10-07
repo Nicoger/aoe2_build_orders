@@ -28,6 +28,11 @@ class _PlayScreenState extends State<PlayScreen>
   double _stepRemainingSecs = 0;
   String _selectedSpeedMode = 'Normal';
 
+  // Variables para la lógica del contador de aldeanos (vills)
+  int _currentVillagers = 3;
+  int _totalBuildVillagers = 21;
+  double _villagerAccumulator = 0.0;
+
   late AnimationController _blinkController;
   late Animation<double> _blinkAnimation;
   final _lang = LanguageService();
@@ -45,6 +50,7 @@ class _PlayScreenState extends State<PlayScreen>
           .map((e) => BuildStep.fromJson(Map<String, dynamic>.from(e))),
     );
 
+    _setupVillagers();
     _initCurrentStepDuration();
 
     _blinkController = AnimationController(
@@ -57,6 +63,47 @@ class _PlayScreenState extends State<PlayScreen>
 
     // Iniciar el oyente de red para recibir el inicio desde la PC
     _startUdpListener();
+  }
+
+  void _setupVillagers() {
+    final currentCiv =
+        (widget.buildOrder['civId'] ?? 'generic').toString().toLowerCase();
+
+    // 1. Detectar aldeanos de inicio según la civilización
+    int startingVills = 3; // Estándar
+    if (currentCiv.contains('chinese') || currentCiv.contains('chino')) {
+      startingVills = 6;
+    } else if (currentCiv.contains('mayan') || currentCiv.contains('maya')) {
+      startingVills = 4;
+    }
+
+    // 2. Si la orden trae un rango en el primer paso (ej. "4-6" o "7-9")
+    if (_steps.isNotEmpty) {
+      final firstStep = _steps.first;
+      if (firstStep.villagerRange != null &&
+          firstStep.villagerRange!.contains('-')) {
+        final parts = firstStep.villagerRange!.split('-');
+        int startRange = int.tryParse(parts[0].trim()) ?? (startingVills + 1);
+        _currentVillagers = startRange - 1;
+      } else {
+        _currentVillagers = startingVills;
+      }
+    } else {
+      _currentVillagers = startingVills;
+    }
+
+    // 3. Encontrar el total máximo de aldeanos de la Build Order
+    int maxVills = _currentVillagers;
+    for (var step in _steps) {
+      if (step.villagerRange != null) {
+        final matches = RegExp(r'\d+').allMatches(step.villagerRange!);
+        for (var match in matches) {
+          int val = int.parse(match.group(0)!);
+          if (val > maxVills) maxVills = val;
+        }
+      }
+    }
+    _totalBuildVillagers = maxVills;
   }
 
   void _startUdpListener() async {
@@ -133,6 +180,8 @@ class _PlayScreenState extends State<PlayScreen>
       _isPlaying = false;
       _elapsedTotalSecs = 0;
       _currentStepIndex = 0;
+      _villagerAccumulator = 0.0;
+      _setupVillagers();
       _initCurrentStepDuration();
     });
   }
@@ -142,6 +191,8 @@ class _PlayScreenState extends State<PlayScreen>
     setState(() {
       _elapsedTotalSecs = 0;
       _currentStepIndex = 0;
+      _villagerAccumulator = 0.0;
+      _setupVillagers();
       _initCurrentStepDuration();
       _isPlaying = true;
     });
@@ -163,6 +214,15 @@ class _PlayScreenState extends State<PlayScreen>
       if (!mounted) return;
       setState(() {
         _elapsedTotalSecs += 1.0;
+
+        // Acumular tiempo para creación automática de aldeanos (25 segundos por vill en AoE2)
+        if (_currentVillagers < _totalBuildVillagers) {
+          _villagerAccumulator += 1.0;
+          if (_villagerAccumulator >= 25.0) {
+            _currentVillagers++;
+            _villagerAccumulator -= 25.0;
+          }
+        }
 
         if (_stepRemainingSecs > 0) {
           _stepRemainingSecs -= 1.0;
@@ -269,77 +329,77 @@ class _PlayScreenState extends State<PlayScreen>
         child: Column(
           children: [
             // PANEL DE TIEMPO PRINCIPAL
-          Container(
-            padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
-            color: Colors.black45,
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                // 1. IZQUIERDA: Contador de Aldeanos
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text(
-                        'ALDEANOS',
-                        style: TextStyle(fontSize: 10, color: Colors.grey),
-                      ),
-                      Text(
-                        '$_currentVillagers/$_totalBuildVillagers',
-                        style: const TextStyle(
-                          fontSize: 32,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.amberAccent,
+            Container(
+              padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+              color: Colors.black45,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  // 1. IZQUIERDA: Contador de Aldeanos
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text(
+                          'ALDEANOS',
+                          style: TextStyle(fontSize: 10, color: Colors.grey),
                         ),
-                      ),
-                    ],
+                        Text(
+                          '$_currentVillagers/$_totalBuildVillagers',
+                          style: const TextStyle(
+                            fontSize: 32,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.amberAccent,
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
-                ),
 
-                // 2. CENTRO: Tiempo Total
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      const Text(
-                        'TIEMPO TOTAL',
-                        style: TextStyle(fontSize: 10, color: Colors.grey),
-                      ),
-                      Text(
-                        _formatGameTime(_elapsedTotalSecs),
-                        style: const TextStyle(
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white70,
+                  // 2. CENTRO: Tiempo Total
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        const Text(
+                          'TIEMPO TOTAL',
+                          style: TextStyle(fontSize: 10, color: Colors.grey),
                         ),
-                      ),
-                    ],
+                        Text(
+                          _formatGameTime(_elapsedTotalSecs),
+                          style: const TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white70,
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
-                ),
 
-                // 3. DERECHA: Restante Paso
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.end,
-                    children: [
-                      const Text(
-                        'RESTANTE PASO',
-                        style: TextStyle(fontSize: 10, color: Colors.grey),
-                      ),
-                      Text(
-                        _formatGameTime(_stepRemainingSecs),
-                        style: const TextStyle(
-                          fontSize: 32,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.amberAccent,
+                  // 3. DERECHA: Restante Paso
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      children: [
+                        const Text(
+                          'RESTANTE PASO',
+                          style: TextStyle(fontSize: 10, color: Colors.grey),
                         ),
-                      ),
-                    ],
+                        Text(
+                          _formatGameTime(_stepRemainingSecs),
+                          style: const TextStyle(
+                            fontSize: 32,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.amberAccent,
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
-          ),
 
             Expanded(
               child: SingleChildScrollView(
