@@ -9,7 +9,7 @@ subprojects {
     afterEvaluate {
         if (project.hasProperty("android")) {
             val android = project.property("android") as com.android.build.gradle.BaseExtension
-            android.compileSdkVersion(34)
+            android.compileSdkVersion(36)
         }
     }
 }
