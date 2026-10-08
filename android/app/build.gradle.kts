@@ -6,7 +6,7 @@ plugins {
 
 android {
     namespace = "com.example.aoe2_build_orders"
-    compileSdk = 34
+    compileSdk = 36
 
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
