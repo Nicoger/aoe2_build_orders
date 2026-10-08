@@ -501,7 +501,8 @@ class _EditorScreenState extends State<EditorScreen> {
           ),
         ],
       ),
-      body: Form(
+      body: SafeArea(
+        child: Form(
         key: _formKey,
         child: Column(
           children: [
@@ -654,6 +655,7 @@ class _EditorScreenState extends State<EditorScreen> {
           ],
         ),
       ),
+      ),  
     );
   }
 }
