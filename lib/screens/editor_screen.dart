@@ -582,7 +582,8 @@ class _EditorScreenState extends State<EditorScreen> {
                           style: const TextStyle(color: Colors.grey)),
                     )
                   : ReorderableListView.builder(
-                      itemCount: _steps.length,
+                    padding: const EdgeInsets.only(bottom: 100.0), 
+                    itemCount: _steps.length,
                       onReorder: (oldIndex, newIndex) {
                         setState(() {
                           if (newIndex > oldIndex) newIndex -= 1;
