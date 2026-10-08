@@ -202,6 +202,25 @@ class _PlayScreenState extends State<PlayScreen>
   void _addSeconds(double seconds) {
     setState(() {
       _stepRemainingSecs = (_stepRemainingSecs + seconds).clamp(0.0, 9999.0);
+      _elapsedTotalSecs += seconds;
+      if (_elapsedTotalSecs < 0) _elapsedTotalSecs = 0;
+
+      // Actualizar el acumulador de aldeanos proporcionalmente
+      if (_currentVillagers < _totalBuildVillagers) {
+        _villagerAccumulator += seconds;
+
+        // Si al sumar tiempo se completa uno o más aldeanos
+        while (_villagerAccumulator >= 25.2 && _currentVillagers < _totalBuildVillagers) {
+          _currentVillagers++;
+          _villagerAccumulator -= 25.2;
+        }
+
+        // Si al restar tiempo el acumulador queda en negativo
+        while (_villagerAccumulator < 0 && _currentVillagers > 0) {
+          _currentVillagers--;
+          _villagerAccumulator += 25.2;
+        }
+      }
     });
   }
 
