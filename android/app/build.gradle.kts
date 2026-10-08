@@ -6,8 +6,15 @@ plugins {
 
 android {
     namespace = "com.example.aoe2_build_orders"
-    compileSdk = 36
-    ndkVersion = "28.2.13676358" // <--- AGREGA ESTA LÍNEA AQUÍ
+    compileSdk = 35
+
+    defaultConfig {
+        applicationId = "com.example.aoe2_build_orders"
+        minSdk = 21
+        targetSdk = 35
+        versionCode = 1
+        versionName = "1.0"
+    }
 
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
@@ -16,20 +23,6 @@ android {
 
     kotlinOptions {
         jvmTarget = "17"
-    }
-
-    defaultConfig {
-        applicationId = "com.example.aoe2_build_orders"
-        minSdk = 21
-        targetSdk = 34
-        versionCode = 1
-        versionName = "1.0.0"
-    }
-
-    buildTypes {
-        release {
-            signingConfig = signingConfigs.getByName("debug")
-        }
     }
 }
 
