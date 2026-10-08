@@ -5,19 +5,12 @@ allprojects {
     }
 }
 
-subprojects {
-    afterEvaluate {
-        if (project.hasProperty("android")) {
-            val android = project.property("android") as com.android.build.gradle.BaseExtension
-            android.compileSdkVersion(36)
-        }
-    }
-}
-
-rootProject.layout.buildDirectory.value(layout.buildDirectory.dir("../build").get())
+val newBuildDir: Directory = rootProject.layout.buildDirectory.dir("../../build").get()
+rootProject.layout.buildDirectory.value(newBuildDir)
 
 subprojects {
-    project.layout.buildDirectory.value(rootProject.layout.buildDirectory.dir(project.name).get())
+    val newSubprojectBuildDir: Directory = newBuildDir.dir(project.name)
+    project.layout.buildDirectory.value(newSubprojectBuildDir)
 }
 
 subprojects {
