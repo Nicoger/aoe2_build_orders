@@ -23,7 +23,7 @@ class _PlayScreenState extends State<PlayScreen>
 
   bool _isPlaying = false;
   Timer? _timer;
-
+  DateTime? _lastTickTime;
   double _elapsedTotalSecs = 0;
   double _stepRemainingSecs = 0;
   String _selectedSpeedMode = 'Normal';
@@ -206,32 +206,42 @@ class _PlayScreenState extends State<PlayScreen>
   }
 
   void _startTimer() {
-    _timer?.cancel();
-    double multiplier = CivBonuses.getGameSpeedMultiplier(_selectedSpeedMode);
-    int intervalMs = (1000 / multiplier).round();
+  _timer?.cancel();
+  double multiplier = CivBonuses.getGameSpeedMultiplier(_selectedSpeedMode);
+  int intervalMs = (1000 / multiplier).round();
 
-    _timer = Timer.periodic(Duration(milliseconds: intervalMs), (timer) {
-      if (!mounted) return;
-      setState(() {
-        _elapsedTotalSecs += 1.0;
+  _lastTickTime = DateTime.now();
 
-        // Acumular tiempo para creación automática de aldeanos (25 segundos por vill en AoE2)
-        if (_currentVillagers < _totalBuildVillagers) {
-          _villagerAccumulator += 1.0;
-          if (_villagerAccumulator >= 25.0) {
-            _currentVillagers++;
-            _villagerAccumulator -= 25.0;
-          }
+  _timer = Timer.periodic(Duration(milliseconds: intervalMs), (timer) {
+    if (!mounted) return;
+
+    final now = DateTime.now();
+    // Tiempo real exacto transcurrido ajustado al multiplicador de velocidad
+    final deltaSeconds = now.difference(_lastTickTime!).inMilliseconds / 1000.0 * multiplier;
+    _lastTickTime = now;
+
+    setState(() {
+      _elapsedTotalSecs += deltaSeconds;
+
+      // Acumular tiempo para los aldeanos
+      if (_currentVillagers < _totalBuildVillagers) {
+        _villagerAccumulator += deltaSeconds;
+
+        // Ajustado a 25.2s para alinearse al ritmo real del juego
+        if (_villagerAccumulator >= 25.2) {
+          _currentVillagers++;
+          _villagerAccumulator -= 25.2;
         }
+      }
 
-        if (_stepRemainingSecs > 0) {
-          _stepRemainingSecs -= 1.0;
-        } else {
-          _nextStep();
-        }
-      });
+      if (_stepRemainingSecs > 0) {
+        _stepRemainingSecs = (_stepRemainingSecs - deltaSeconds).clamp(0.0, 9999.0);
+      } else {
+        _nextStep();
+      }
     });
-  }
+  });
+}
 
   void _nextStep() {
     if (_currentStepIndex < _steps.length - 1) {
